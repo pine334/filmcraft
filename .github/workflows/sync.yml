@@ -1,8 +1,9 @@
+
 name: Sync Upstream
 on:
   schedule:
     - cron: '0 0 * * *'
-  workflow_dispatch: # 额外加这个：你可以手动点按钮触发同步，方便调试
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -13,3 +14,21 @@ jobs:
         with:
           upstream: storytold/filmcraft
           target: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+      - name: Download Upstream Release Assets
+        uses: dsaltares/fetch-release-assets@v2
+        with:
+          repo: storytold/artcraft
+          latest: true
+          output_dir: ./release-assets
+
+      - name: Upload Assets to My Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./release-assets/*
+          tag_name: auto-synced-release
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
